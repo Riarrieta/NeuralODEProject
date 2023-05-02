@@ -9,6 +9,7 @@ struct NeuralODE{A<:Chain,B,T}
     r0::Vector{T}   # backward ODE initial condition r0 = [μ₁,μ₂,...,λ]
     bstate_indices::Vector{UnitRange{Int64}}  # backward state indices
 end
+Base.show(io::IO,nn::NeuralODE) = print(io,"NeuralODE()")
 (nn::NeuralODE)(u) = nn.nn(u)
 
 # adjoint variables
@@ -130,4 +131,9 @@ function node_train!(nn::NeuralODE,u0,tspan,tarray,utrue,
     # update weights
     update_weights!(nn,cost_pgrad,optim)
     return ufunc,cost
+end
+
+function node_train!(nn::NeuralODE,ode::ODEStruct,optim;odesolver=DEFAULT_ODE_SOLVER)
+    tspan = (first(ode.tarray),last(ode.tarray))
+    return node_train!(nn::NeuralODE,ode.u0,tspan,ode.tarray,ode.utrue,optim;odesolver)
 end
