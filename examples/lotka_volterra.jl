@@ -8,20 +8,21 @@ const NO = NeuralODEProject
 ## Generate data
 function ftrue(du,u)
     # lotka_volterra
+    # period = 2π/sqrt(α*γ)
     x, y = u
-    α, β, δ, γ = (2.2f0, 1.0f0, 2.0f0, 0.4f0)
+    α, β, δ, γ = (2f0/3f0, 4f0/3f0, 1.0f0, 1.0f0)
     du[1] = dx = (α - β*y)x
     du[2] = dy = (δ*x - γ)y
   end
 u0 = Float32[1.0,1.0]
-tarray  = 0.0f0:0.25f0:30f0
+tarray  = 0.0f0:0.25f0:7.7f0
 odelist = [NO.ODEStruct(ftrue,u0,tarray) for _ in 1:1]
 
 ## Neural network
 nn = Chain(Dense(2 => 50,tanh),
            Dense(50 => 2)) |> NO.NeuralODE
 #optim = Flux.Descent(1e-2)  # Optimiser
-optim = Flux.Adam(1e-6)  # Optimiser
+optim = Flux.Adam(1e-2)  # Optimiser
 
 ## Training v1
 costlist = zeros(length(odelist))
@@ -57,7 +58,7 @@ plot!(ufunc,label=["Prediction u[1]" "Prediction u[2]"],linestyle=:dash)
 #scatter!([u[1] for u in soltrue.u], [u[2] for u in soltrue.u], label="Observations")
 
 ## Extrapolation
-tinf,tsup = -1f0,100f0
+tinf,tsup = -1f0,50f0
 
 tspan2 = (0.0f0, tsup)
 ufunc2 = NO.forward_pass(nn,u0,tspan2)
