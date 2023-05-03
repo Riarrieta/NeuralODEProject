@@ -10,13 +10,13 @@ const A = [-0.1f0 2.0f0; -2.0f0 -0.1f0]
 ftrue(du,u) = mul!(du,A,u)  # du = A*u
 tarray  = 0.0f0:0.1f0:1.0f0
 σ = 5 
-odelist = [NO.ODEStruct(ftrue,σ*randn32(2),tarray) for _ in 1:30]
+odelist = [NO.ODEStruct(ftrue,σ*randn32(2),tarray) for _ in 1:4]
 
 ## Neural network
 nn = Chain(Dense(2 => 50,tanh),
            Dense(50 => 2)) |> NO.NeuralODE
 #optim = Flux.Descent(1e-2)  # Optimiser
-optim = Flux.Adam(1e-5)  # Optimiser
+optim = Flux.Adam(1e-2)  # Optimiser
 
 ## Training v1
 costlist = zeros(length(odelist))
@@ -31,20 +31,14 @@ for _ in 1:300
 end
 
 ## Training v2
-costlist = zeros(length(odelist))
-ufunclist = Vector(undef,length(odelist))
-for (i,ode_) in enumerate(odelist)
-    for _ in 1:30
-        ufunc,cost = NO.node_train!(nn,ode_,optim)
-        ufunclist[i] = ufunc
-        costlist[i] = cost
-    end
-    @show maximum(costlist)
+for _ in 1:300
+    _,cost = NO.node_train!(nn,odelist,optim)
+    @show cost
 end
 
 ## Plot
 #index = 5
-u0 = σ*randn32(2)*4
+u0 = σ*randn32(2)
 ode = NO.ODEStruct(ftrue,u0,tarray) #odelist[index]
 ufunc = NO.forward_pass(nn,ode.u0,(first(tarray),last(tarray)))# ufunclist[index]
 
@@ -73,7 +67,7 @@ title!("Extrapolation")
 
 ## Compare nn forward map angle
 t = range(0,1,100)
-u = [[cos(2π*t),sin(2π*t)] for t in t]
+u = [Float32[cos(2π*t),sin(2π*t)] for t in t]
 dutrue = [A*u for u in u]
 dunn = [nn(u) for u in u]
 

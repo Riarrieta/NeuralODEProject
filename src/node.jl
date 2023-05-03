@@ -118,8 +118,8 @@ function update_weights!(nn::NeuralODE,cost_pgrad,optim)
     Flux.update!(optim,nn.params,grads)
 end
 
-function node_train!(nn::NeuralODE,u0,tspan,tarray,utrue,
-                     optim;odesolver=DEFAULT_ODE_SOLVER)
+function node_weights_gradient(nn::NeuralODE,u0,tspan,tarray,
+                               utrue;odesolver=DEFAULT_ODE_SOLVER)
     # forward pass
     ufunc = forward_pass(nn,u0,tspan;odesolver)
     # cost
@@ -128,12 +128,35 @@ function node_train!(nn::NeuralODE,u0,tspan,tarray,utrue,
     # backward pass
     rfunc = backward_pass(nn,ufunc,tspan,tarray,cost_ugrad;odesolver)
     cost_pgrad = rfunc(tspan|>first)  # gradient of cost w/r to parameters
+    return cost_pgrad,ufunc,cost
+end
+function node_weights_gradient(nn::NeuralODE,ode::ODEStruct;
+                               odesolver=DEFAULT_ODE_SOLVER)
+    tspan = (first(ode.tarray),last(ode.tarray))
+    return node_weights_gradient(nn,ode.u0,tspan,ode.tarray,ode.utrue;odesolver)                      
+end
+
+function node_train!(nn::NeuralODE,u0,tspan,tarray,utrue,
+                     optim;odesolver=DEFAULT_ODE_SOLVER)
+    cost_pgrad,ufunc,cost = node_weights_gradient(nn,u0,tspan,tarray,utrue;odesolver)
     # update weights
     update_weights!(nn,cost_pgrad,optim)
     return ufunc,cost
 end
-
 function node_train!(nn::NeuralODE,ode::ODEStruct,optim;odesolver=DEFAULT_ODE_SOLVER)
     tspan = (first(ode.tarray),last(ode.tarray))
     return node_train!(nn::NeuralODE,ode.u0,tspan,ode.tarray,ode.utrue,optim;odesolver)
+end
+function node_train!(nn::NeuralODE,odelist::Vector{<:ODEStruct},
+                     optim;odesolver=DEFAULT_ODE_SOLVER)
+    cost_pgrad = zero(nn.r0)     # average of gradients
+    cost = zero(nn.r0 |> eltype) # average cost
+    for ode in odelist
+        ode_pgrad,_,ode_cost = node_weights_gradient(nn,ode;odesolver)
+        cost_pgrad .+= ode_pgrad/length(odelist)
+        cost += ode_cost/length(odelist)
+    end
+    # update weights
+    update_weights!(nn,cost_pgrad,optim)
+    return nothing,cost
 end
