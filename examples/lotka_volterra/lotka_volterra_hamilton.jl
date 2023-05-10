@@ -9,11 +9,12 @@ const NO = NeuralODEProject
 function ftrue(du,u)
     # lotka_volterra
     # period = 2π/sqrt(α*γ)
-    # x = exp(p), y = exp(q)
-    p,q = u
+    # prey: x = exp(p)
+    # predator: y = exp(q)
+    q,p = u
     α, β, δ, γ = (2f0/3f0, 4f0/3f0, 1.0f0, 1.0f0)
-    du[1] = α-β*exp(q)  # pdot
-    du[2] = δ*exp(p)-γ  # qdot
+    du[1] = δ*exp(p)-γ  # qdot
+    du[2] = α-β*exp(q)  # pdot
   end
 u0 = log.(Float32[1.0,1.0])
 tarray  = 0.0f0:0.25f0:17f0
