@@ -38,8 +38,8 @@ function NeuralODE(nn)
     nparams = length(params)
     sizeparams = [size(w) for w in params]
     lengthparams = [length(w) for w in params]
-    ndim = size(nn.layers[1].weight, 2)
-    T = nn.layers[1].weight |> eltype
+    ndim = size(layers(nn)[1].weight, 2)
+    T = layers(nn)[1].weight |> eltype
     r0 = zeros(T,ndim+sum(lengthparams))
     bstate_indices = obtain_backward_state_indices(nparams,lengthparams,ndim)
     return NeuralODE(nn,params,nparams,sizeparams,lengthparams,

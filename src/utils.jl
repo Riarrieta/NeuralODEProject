@@ -15,4 +15,6 @@ end
 # ODE solver using Tsit5
 solveTsit5(p;kwargs...) = OrdinaryDiffEq.solve(p, Tsit5();kwargs...)
 
+layers(nn::Chain) = nn.layers
+
 const DEFAULT_ODE_SOLVER = solveTsit5
