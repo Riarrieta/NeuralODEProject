@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage[legalpaper, margin=1in]{geometry}
+\usepackage{subcaption}
+
+% Math packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+%\usepackage{biblatex}
+%\addbibresource{bib.bib} 
+\author{}
+
+\renewcommand{\arraystretch}{1.2}
+\renewcommand{\vec}{\bold}
+\let\oldhat\hat
+\renewcommand{\hat}[1]{\bold{\oldhat{#1}}}
+
+\title{}
+\date{}
+
+\begin{document}
+Hola
+\begin{align}
+	\frac{d}{dt}\vec{u}(t) = \textit{NN}(\vec{u},t,\theta)
+\end{align}
+\begin{align}
+	\vec{u}(t) = \text{ODESolver}(\textit{NN},\vec{u}_0,t)
+\end{align}
+
+\begin{align}
+G(\vec{u},\theta) &= \int_0^T g(\vec{u}(t,\theta))\, dt\\
+\frac{d}{dt} \vec{\lambda} &= -\frac{\partial \textit{NN}}{\partial\vec{u}}^\top \vec{\lambda}- \frac{dg}{d\vec{u}},\\
+\frac{d}{dt} \vec{\mu} &= -\frac{\partial \textit{NN}}{\partial\theta}^\top  \vec{\lambda},\\
+\lambda(T^+) &= 0,\\
+\mu(T^+) &= 0.\\
+\mu(0^-) &= \frac{\partial G}{\partial \theta}
+\end{align}
+
+\begin{align}
+	\frac{d}{dt}\vec{u}(t) &= A\vec{u}(t),\\
+	A &= \begin{pmatrix}
+		-0.1 & 2 \\
+		-2 & -0.1
+	\end{pmatrix}
+\end{align}
+
+\begin{align}
+	\frac{d\vec{q}}{dt} &= \frac{\partial H}{\partial \vec{p}},\\
+	\frac{d\vec{p}}{dt} &= -\frac{\partial H}{\partial \vec{q}}.
+\end{align}
+\end{document}
